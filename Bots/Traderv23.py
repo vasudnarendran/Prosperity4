@@ -13,9 +13,9 @@ DEFAULT_EMERALDS_PARAMS = {
     "BASE_TAKE_EDGE": 1.00,
     "BASE_QUOTE_EDGE": 1.75,
     "MAX_QUOTE_EDGE": 4.0,
-    "MAX_TAKE_SIZE": 10,
-    "PASSIVE_SIZE": 7,
-    "SOFT_LIMIT_RATIO": 0.45,
+    "MAX_TAKE_SIZE": 15,        # v23: 10→15
+    "PASSIVE_SIZE": 10,         # v23: 7→10
+    "SOFT_LIMIT_RATIO": 0.55,   # v23: 0.45→0.55
 }
 
 
@@ -29,13 +29,13 @@ DEFAULT_TOMATOES_PARAMS = {
     "BASE_TAKE_EDGE": 1.50,
     "BASE_QUOTE_EDGE": 2.25,
     "MAX_QUOTE_EDGE": 5.0,
-    "PASSIVE_SIZE": 8,
+    "PASSIVE_SIZE": 10,             # v23: 8→10
     "MAX_TAKE_SIZE": 8,
     "TREND_THRESHOLD": 1.25,
     "TREND_IMBALANCE_THRESHOLD": 0.15,
     "TOXIC_SPREAD_THRESHOLD": 15.0,
     "TOXIC_MOMENTUM_THRESHOLD": 1.5,
-    "STRONG_TREND_THRESHOLD": 4.0,
+    "STRONG_TREND_THRESHOLD": 2.0,  # v23: 4.0→2.0
     "SOFT_LIMIT_RATIO": 0.55,
 }
 
@@ -273,8 +273,7 @@ class EmeraldsTrader(BaseProductTrader):
         elif position <= -self.soft_limit:
             buy_quote += 1
 
-        if int(self.best_bid) >= self.REFERENCE_PRICE and position >= 0:
-            sell_quote += 1
+        # v23: removed sell_quote += 1 when bid >= REFERENCE_PRICE (was counterproductive)
 
         return self.clamp_inside_spread(buy_quote, sell_quote)
 

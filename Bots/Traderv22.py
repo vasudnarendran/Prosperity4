@@ -10,12 +10,12 @@ DEFAULT_EMERALDS_PARAMS = {
     "MID_WEIGHT": 0.20,
     "MICRO_WEIGHT": 0.00,
     "INVENTORY_SKEW": 0.12,
-    "BASE_TAKE_EDGE": 1.00,
-    "BASE_QUOTE_EDGE": 1.75,
-    "MAX_QUOTE_EDGE": 4.0,
-    "MAX_TAKE_SIZE": 10,
-    "PASSIVE_SIZE": 7,
-    "SOFT_LIMIT_RATIO": 0.45,
+    "BASE_TAKE_EDGE": 0.50,     # v21: 1.00 — lower threshold to take more often
+    "BASE_QUOTE_EDGE": 1.00,    # v21: 1.75 — tighter quotes → more fills
+    "MAX_QUOTE_EDGE": 2.0,      # v21: 4.0  — enforce tight cap
+    "MAX_TAKE_SIZE": 15,        # v21: 10   — bigger takes when edge is present
+    "PASSIVE_SIZE": 10,         # v21: 7    — larger resting size
+    "SOFT_LIMIT_RATIO": 0.60,   # v21: 0.45 — allow more inventory before widening
 }
 
 
@@ -23,20 +23,20 @@ DEFAULT_TOMATOES_PARAMS = {
     "MID_WEIGHT": 0.35,
     "MICRO_WEIGHT": 0.35,
     "HISTORY_WEIGHT": 0.30,
-    "MOMENTUM_WEIGHT": 0.30,
+    "MOMENTUM_WEIGHT": 0.35,            # v21: 0.30 — lean harder into momentum signal
     "IMBALANCE_WEIGHT": 0.70,
     "INVENTORY_SKEW": 0.06,
-    "BASE_TAKE_EDGE": 1.50,
+    "BASE_TAKE_EDGE": 1.25,             # v21: 1.50 — take more aggressively
     "BASE_QUOTE_EDGE": 2.25,
     "MAX_QUOTE_EDGE": 5.0,
-    "PASSIVE_SIZE": 8,
+    "PASSIVE_SIZE": 10,                 # v21: 8    — bigger passive size
     "MAX_TAKE_SIZE": 8,
-    "TREND_THRESHOLD": 1.25,
+    "TREND_THRESHOLD": 1.00,            # v21: 1.25 — classify trends earlier
     "TREND_IMBALANCE_THRESHOLD": 0.15,
     "TOXIC_SPREAD_THRESHOLD": 15.0,
     "TOXIC_MOMENTUM_THRESHOLD": 1.5,
-    "STRONG_TREND_THRESHOLD": 4.0,
-    "SOFT_LIMIT_RATIO": 0.55,
+    "STRONG_TREND_THRESHOLD": 2.0,      # v21: 4.0  — activate aggressive bands far more often
+    "SOFT_LIMIT_RATIO": 0.60,           # v21: 0.55 — allow more inventory before capping
 }
 
 
@@ -232,7 +232,8 @@ class EmeraldsTrader(BaseProductTrader):
         edge = self.BASE_TAKE_EDGE
         position = self.projected_position()
 
-        if int(self.spread) >= 14:
+        # v22: raised threshold from 14 → 20 so this doesn't fire on every tick
+        if int(self.spread) >= 20:
             edge += 0.5
 
         if side == "BUY":
@@ -246,20 +247,21 @@ class EmeraldsTrader(BaseProductTrader):
             elif position <= -20:
                 edge += 0.5
 
+        # v22: increased bid discount from 0.25 → 0.5 to take sells more aggressively at 10000
         if side == "SELL" and int(self.best_bid) >= 10000:
-            edge -= 0.25
+            edge -= 0.5
 
-        return max(0.5, edge)
+        return max(0.25, edge)  # v22: lowered floor from 0.5 → 0.25
 
     def quote_edge(self) -> float:
-        edge = max(self.BASE_QUOTE_EDGE, float(self.spread) / 4.0)
-        edge = min(self.MAX_QUOTE_EDGE, edge)
+        # v22: removed spread/4 term — it dominated (spread=16 → 4.0) and blocked tight quoting
+        edge = self.BASE_QUOTE_EDGE
 
         if abs(self.projected_position()) >= self.soft_limit:
             edge += 0.5
 
         if int(self.best_ask) <= 10000 or int(self.best_bid) >= 10000:
-            edge = max(1.5, edge - 0.5)
+            edge = max(0.5, edge - 0.5)
 
         return min(self.MAX_QUOTE_EDGE, edge)
 
@@ -273,8 +275,8 @@ class EmeraldsTrader(BaseProductTrader):
         elif position <= -self.soft_limit:
             buy_quote += 1
 
-        if int(self.best_bid) >= self.REFERENCE_PRICE and position >= 0:
-            sell_quote += 1
+        # v22: removed sell_quote += 1 when best_bid >= REFERENCE_PRICE
+        # that line was counterproductive — it pushed sell quotes AWAY from fills when bid was strong
 
         return self.clamp_inside_spread(buy_quote, sell_quote)
 
@@ -374,6 +376,7 @@ class TomatoesTrader(BaseProductTrader):
         return "mean_revert"
 
     def target_band(self, regime: str) -> Tuple[int, int]:
+        # v22: STRONG_TREND_THRESHOLD lowered 4.0 → 2.0, activates aggressive bands far more often
         if regime == "trend_up":
             return (20, 36) if self.momentum >= self.STRONG_TREND_THRESHOLD else (10, 26)
         if regime == "trend_down":
