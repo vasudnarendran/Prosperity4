@@ -1,0 +1,90 @@
+# =========================
+# OS FILES
+# =========================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# =========================
+# EDITORS / IDEs
+# =========================
+
+# VS Code
+.vscode/
+
+# JetBrains (IntelliJ, PyCharm, etc.)
+.idea/
+*.iml
+
+# Sublime
+*.sublime-project
+*.sublime-workspace
+
+# =========================
+# LOGS
+# =========================
+# Keep logs tracked
+
+# =========================
+# DEPENDENCIES
+# =========================
+
+node_modules/
+vendor/
+
+# =========================
+# BUILD OUTPUTS
+# =========================
+
+dist/
+build/
+out/
+bin/
+target/
+
+# =========================
+# ENV FILES (IMPORTANT)
+# =========================
+
+.env
+.env.*
+*.local
+
+# =========================
+# TEMP FILES
+# =========================
+
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# =========================
+# PYTHON (if relevant)
+# =========================
+
+__pycache__/
+*.pyc
+
+# =========================
+# JAVA (if relevant)
+# =========================
+
+*.class
+
+# =========================
+# MISC
+# =========================
+
+coverage/
+.cache/
