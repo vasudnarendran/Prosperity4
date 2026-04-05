@@ -26,11 +26,13 @@ It reads from `Data/` and `Bots/Logs/`, and writes human-readable reports to `An
 
 # Bots
 
-Record Total PnL: N/A
-Bot: Trader v1
+Record Total PnL: N/A (official) | ~10000 (local Python backtest)
+Bot: Traderv15.py
 
 Current Best Notes:
-Starting fresh. First bot is a simple midpoint-based market maker.
+Base carried over from partner's repo (their V15 after parameter sweep).
+EMERALDS: anchor market maker around 10000.
+TOMATOES: regime-driven (trend_up / trend_down / mean_revert / toxic) with sweep-tuned parameters.
 
 Version Log:
 See [BOT_VERSIONS.md](BOT_VERSIONS.md)
