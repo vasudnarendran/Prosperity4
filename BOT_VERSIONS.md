@@ -35,3 +35,13 @@ Works: Yes
 Improvement: EMA (alpha=2/13) replaces SMA for TOMATOES recent_average / momentum signal. Keeps V16/17 changes (micro removal, HISTORY_LENGTH=12).
 Notes: EMA is more responsive to recent price moves — momentum signal reacts faster to trend shifts. Mixed result vs base: +36 day-1, -23 day-2. Net direction unclear — worth testing on Rust for a larger signal.
 PnL: Local Python: d-1 9997 / d-2 10017
+
+V20 (tested, discarded):
+Improvement tested: Explicit Clear step — aggressive sell/buy at best_bid/ask when position > soft_limit.
+Notes: Hurt day-1 (-69). Paying the full spread (~7 ticks) just to reduce 1-4 units is too expensive. The inventory skew already handles gradual flattening. Discarded.
+
+V21:
+Works: Yes
+Improvement: Signal-strength-scaled take size in trend regimes only. Edge ratio (raw_edge / take_edge) scales clip up to 1.5x MAX_TAKE_SIZE. Mean-revert keeps fixed size to avoid inventory buildup.
+Notes: Neutral vs V19 — trend regimes don't fire frequently enough in this dataset for the scaling to show. Kept as it is logically correct and should help in Rust/official testing where more trend conditions occur.
+PnL: Local Python: d-1 9997 / d-2 10017 (same as V19)
