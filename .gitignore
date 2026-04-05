@@ -88,3 +88,11 @@ __pycache__/
 
 coverage/
 .cache/
+
+# =========================
+# BACKTEST / ANALYSIS OUTPUT
+# =========================
+
+Backtest/output/
+Analysis/output/*.txt
+Analysis/output/*.csv
